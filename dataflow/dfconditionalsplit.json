@@ -1,0 +1,46 @@
+{
+	"name": "dfconditionalsplit",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "dsinput",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "dsoutput",
+						"type": "DatasetReference"
+					},
+					"name": "ITsink"
+				},
+				{
+					"dataset": {
+						"referenceName": "dsoutput",
+						"type": "DatasetReference"
+					},
+					"name": "HRsink"
+				},
+				{
+					"dataset": {
+						"referenceName": "dsoutput",
+						"type": "DatasetReference"
+					},
+					"name": "Othersink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "ConditionalSplit1"
+				}
+			],
+			"script": "source(output(\n\t\teid as string,\n\t\tename as string,\n\t\tdid as string,\n\t\tcountry as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> source1\nsource1 split(equals(did, '101'),\n\tequals(did, '102'),\n\tdisjoint: false) ~> ConditionalSplit1@(IT, HR, Others)\nConditionalSplit1@IT sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tColumn_1 as string,\n\t\tColumn_2 as string\n\t),\n\tpartitionFileNames:['ITEmployees'],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> ITsink\nConditionalSplit1@HR sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tColumn_1 as string,\n\t\tColumn_2 as string\n\t),\n\tpartitionFileNames:['HREmployees'],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> HRsink\nConditionalSplit1@Others sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\tColumn_1 as string,\n\t\tColumn_2 as string\n\t),\n\tpartitionFileNames:['OtherEmployees'],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> Othersink"
+		}
+	}
+}

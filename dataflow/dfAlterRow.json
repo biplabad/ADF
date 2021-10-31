@@ -1,0 +1,32 @@
+{
+	"name": "dfAlterRow",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "dsemplyeenew",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "dssqldb",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "AlterRow1"
+				}
+			],
+			"script": "source(output(\n\t\teid as integer,\n\t\tename as string,\n\t\tgender as string,\n\t\tstate as string,\n\t\tdepartment as string,\n\t\tsalary as integer\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> source1\nsource1 alterRow(deleteIf(department=='IT'),\n\tupdateIf(gender=='Male')) ~> AlterRow1\nAlterRow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tinput(\n\t\teid as integer,\n\t\tename as string,\n\t\tgender as string,\n\t\tstate as string,\n\t\tdepartment as string,\n\t\tsalary as integer\n\t),\n\tdeletable:true,\n\tinsertable:true,\n\tupdateable:true,\n\tupsertable:true,\n\tkeys:['eid'],\n\tformat: 'table',\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\terrorHandlingOption: 'stopOnFirstError',\n\tmapColumn(\n\t\teid,\n\t\tename,\n\t\tgender,\n\t\tstate,\n\t\tdepartment,\n\t\tsalary\n\t),\n\tpartitionBy('hash', 1)) ~> sink1"
+		}
+	}
+}
